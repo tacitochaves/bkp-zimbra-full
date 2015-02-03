@@ -113,7 +113,7 @@ sub _compression {
     $self->{_directory} = $directory if defined $directory;
     $self->{_file}      = $file if defined $file;
 
-    open my $bzip, "gzip -9 $self->{_directory}/$self->{_file} |" or die "Não foi possível fazer a compressão\n";
+    open my $bzip, "gzip -9 -f $self->{_directory}/$self->{_file} 2>/dev/null |" or die "Não foi possível fazer a compressão\n";
     close $bzip;
     
 }

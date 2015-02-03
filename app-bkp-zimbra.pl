@@ -17,8 +17,12 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 
 use ZIMBRA::BKP_Full;
+use REMOTE::Availability;
+use REMOTE::Mounting;
 
 my $self = ZIMBRA::BKP_Full->new;
+my $c    = REMOTE::Availability->new;
+my $d    = REMOTE::Mounting->new;
 
 my $param = {
     binary       => { zmprov    => "/opt/zimbra/bin/zmprov", zmmailbox => "/opt/zimbra/bin/zmmailbox" },
@@ -51,3 +55,12 @@ my $load_backup = $self->load_backup_dir( "$param->{dst_backup}->{mailboxes}" );
 for my $file ( @{ $load_backup } ) {
     $self->_compression( "$param->{dst_backup}->{mailboxes}", "$file" );
 }
+
+# import data of the conection
+my $fh = $d->_read($ARGV[0]);
+
+# takes the server ip network
+my $host = $d->_parse( $fh->{Destination} );
+
+# checks if the host is accessible on the network
+my $result = $c->check_host( $host );
