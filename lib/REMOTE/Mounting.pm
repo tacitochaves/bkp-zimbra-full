@@ -57,4 +57,32 @@ sub check_assembly {
     }
 }
 
+# riding the remote server backup directory
+sub mount {
+    my ( $self, $config ) = @_;
+
+    $self->{_username} = $config->{Username} if defined $config->{Username};
+    $self->{_password} = $config->{Password} if defined $config->{Password};
+    $self->{_destination} = $config->{Destination} if defined $config->{Destination};
+    $self->{_directory} = $config->{Directory} if defined $config->{Directory};
+
+    open my $mount, "mount -t cifs -o user=$self->{_username},password=$self->{_password} \/\/$self->{_destination} $self->{_directory} |" or die "Error! Host Unreachable\n";
+    my @a = (<$mount>);
+    close($mount);
+
+}
+
+# disassembles sharing
+sub umount {
+    my ( $self, $dir ) = @_;
+
+    $self->{_directory} = $dir if defined $dir;
+
+    open my $umount, "umount $self->{_directory} |" or die "[error] Directory not mounted\n";
+    my @l = <$umount>;
+    close $umount;
+
+    return "umounted";
+}
+
 1;

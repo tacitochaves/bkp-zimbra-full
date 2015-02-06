@@ -16,6 +16,7 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/lib";
 
+use File::Copy qw(copy);
 use ZIMBRA::BKP_Full;
 use REMOTE::Availability;
 use REMOTE::Mounting;
@@ -64,3 +65,27 @@ my $host = $d->_parse( $fh->{Destination} );
 
 # checks if the host is accessible on the network
 my $result = $c->check_host( $host );
+
+if ( $result ne 100 ) {
+
+    my $check_point = $d->check_assembly( $fh->{Directory} );
+
+    # carregando todos os backups no diretório: /bkp-zimbra/
+    $load_backup = $self->load_backup_dir( "$param->{dst_backup}->{mailboxes}" );
+
+    if ( $check_point ne "is mounted" ) {
+
+        # montando o compartilhamento no servidor de backup
+        $d->mount($fh);
+
+        # realizando a cópia para o servidor de backup
+        for my $compacted ( @{ $load_backup } ) {
+
+            copy "$param->{dst_backup}->{mailboxes}/$compacted", "$fh->{Directory}/";
+
+        }
+    }
+
+    $d->umount( $fh->{Directory} );
+
+}
